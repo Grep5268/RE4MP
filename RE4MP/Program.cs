@@ -33,11 +33,12 @@ namespace RE4MP
                 if (Console.ReadLine().Equals("server"))
                 {
                     var server = new Server();
-                    server.StartServer();
+                    server.StartServer(trainer);
                 }
                 else
                 {
-                    await Client.StartClient();
+                    var client = new Client();
+                    await client.StartClient(trainer);
                 }
             }).GetAwaiter().GetResult();
         }

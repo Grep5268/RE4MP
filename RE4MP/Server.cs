@@ -19,7 +19,7 @@ namespace RE4MP
     {
         private ServerConnectionContainer serverConnectionContainer;
 
-        public void StartServer()
+        public void StartServer(Trainer trainer)
         {
             Console.WriteLine("Please enter the server port and press return:");
             string port = Console.ReadLine();
@@ -44,15 +44,15 @@ namespace RE4MP
                 AwesomeSockets.Buffers.Buffer.ClearBuffer(inBuf);
 
                 //act on message
-                Console.WriteLine(string.Join(", ", res["pos_ally"]));
+                //Console.WriteLine(string.Join(", ", res["pos_ally"]));
+                this.HandleInputData(res, trainer);
 
                 //get response data
-                var test = new Dictionary<string, byte[]>();
-                test.Add("pos_ally", new byte[] { 1, 2, 3, 4 });
+                var outputData = this.GetOutputData(trainer);
 
                 //write to buffer
                 AwesomeSockets.Buffers.Buffer.ClearBuffer(outBuf);
-                AwesomeSockets.Buffers.Buffer.Add(outBuf, Utils.ObjectToByteArray(test));
+                AwesomeSockets.Buffers.Buffer.Add(outBuf, Utils.ObjectToByteArray(outputData));
                 AwesomeSockets.Buffers.Buffer.FinalizeBuffer(outBuf);
 
                 //respond
@@ -61,6 +61,20 @@ namespace RE4MP
             }
 
             Console.ReadLine();
+        }
+
+        private Dictionary<string, byte[]> GetOutputData(Trainer trainer)
+        {
+            var outputData = new Dictionary<string, byte[]>();
+
+            outputData.Add("write_pos_ally", trainer.GET_POS_ALLY());
+
+            return outputData;
+        }
+
+        private void HandleInputData(Dictionary<string, byte[]> data, Trainer trainer)
+        {
+            trainer.WRITE_POS_ALLY(data["write_pos_ally"]);
         }
     }
 }

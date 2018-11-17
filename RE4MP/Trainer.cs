@@ -23,8 +23,8 @@ namespace RE4MP
         {
             switch(command)
             {
-                case "pos_ally":
-                    POS_ALLY(data);
+                case "write_pos_ally":
+                    WRITE_POS_ALLY(data);
                     break;
                 default:
                     break;
@@ -42,15 +42,22 @@ namespace RE4MP
             MemLib.writeBytes(address, data);
         }
 
-        private void POS_ALLY(byte[] data)
+        public byte[] ReadMemory(string address, int bytes)
+        {
+            return MemLib.readBytes(address, bytes);
+        }
+
+        public void WRITE_POS_ALLY(byte[] data)
         {
             //new byte[] { 55, 197, 217, 75, 230, 197, 133, 125, 177, 70 }
             WriteMemory("base+857060,96", data);
         }
 
-        public byte[] ReadMemory(string address, int offset)
+        public byte[] GET_POS_ALLY()
         {
-            return (MemLib.readBytes(address, 10));
+            return ReadMemory("base+857060,96", 10);
         }
+
+        
     }
 }
