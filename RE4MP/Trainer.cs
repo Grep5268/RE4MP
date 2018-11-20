@@ -33,7 +33,6 @@ namespace RE4MP
 
         private void WriteMemory(string address, int data)
         {
-            var x = ReadMemory(address, 0);
             MemLib.writeMemory(address, "int", data.ToString());
         }
 
@@ -55,7 +54,7 @@ namespace RE4MP
 
         public byte[] GET_POS_ALLY()
         {
-            return ReadMemory("base+857060,96", 10);
+            return ReadMemory("base+007FDB08,96", 10);
         }
 
         

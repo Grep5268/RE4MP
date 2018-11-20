@@ -35,29 +35,49 @@ namespace RE4MP
 
             while(true)
             {
-                //get message
-                Tuple<int, EndPoint> received = AweSock.ReceiveMessage(client, inBuf);
-                AwesomeSockets.Buffers.Buffer.FinalizeBuffer(inBuf);
+                try
+                {
+                    //get message
+                    Tuple<int, EndPoint> received = AweSock.ReceiveMessage(client, inBuf);
+                    AwesomeSockets.Buffers.Buffer.FinalizeBuffer(inBuf);
 
-                //parse message
-                var res = Utils.Deserialize(AwesomeSockets.Buffers.Buffer.GetBuffer(inBuf));
-                AwesomeSockets.Buffers.Buffer.ClearBuffer(inBuf);
+                    //parse message
+                    var res = Utils.Deserialize(AwesomeSockets.Buffers.Buffer.GetBuffer(inBuf));
+                    AwesomeSockets.Buffers.Buffer.ClearBuffer(inBuf);
 
-                //act on message
-                //Console.WriteLine(string.Join(", ", res["pos_ally"]));
-                this.HandleInputData(res, trainer);
+                    //act on message
+                    //Console.WriteLine(string.Join(", ", res["pos_ally"]));
+                    this.HandleInputData(res, trainer);
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine(e.Message);
 
-                //get response data
-                var outputData = this.GetOutputData(trainer);
+                    AwesomeSockets.Buffers.Buffer.ClearBuffer(outBuf);
+                    AwesomeSockets.Buffers.Buffer.ClearBuffer(inBuf);
+                    trainer.Initialize();
+                }
 
-                //write to buffer
-                AwesomeSockets.Buffers.Buffer.ClearBuffer(outBuf);
-                AwesomeSockets.Buffers.Buffer.Add(outBuf, Utils.ObjectToByteArray(outputData));
-                AwesomeSockets.Buffers.Buffer.FinalizeBuffer(outBuf);
+                try {
+                    //get response data
+                    var outputData = this.GetOutputData(trainer);
 
-                //respond
-                int bytesSent = AweSock.SendMessage(client, outBuf);
-                Console.WriteLine("sent data");
+                    //write to buffer
+                    AwesomeSockets.Buffers.Buffer.ClearBuffer(outBuf);
+                    AwesomeSockets.Buffers.Buffer.Add(outBuf, Utils.ObjectToByteArray(outputData));
+                    AwesomeSockets.Buffers.Buffer.FinalizeBuffer(outBuf);
+
+                    //respond
+                    int bytesSent = AweSock.SendMessage(client, outBuf);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+
+                    AwesomeSockets.Buffers.Buffer.ClearBuffer(outBuf);
+                    AwesomeSockets.Buffers.Buffer.ClearBuffer(inBuf);
+                    trainer.Initialize();
+                }
             }
 
             Console.ReadLine();
