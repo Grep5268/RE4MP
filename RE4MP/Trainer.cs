@@ -12,9 +12,14 @@ namespace RE4MP
 {
     public class Trainer
     {
+        private const int ENEMY_POS_BYTE_COUNT = 20;
+        private const int ENEMY_HP_BYTE_COUNT = 2;
+
         public Mem MemLib = new Mem();
 
-        private Dictionary<byte[], byte[]> serverClientEnemyPointerMap = new Dictionary<byte[], byte[]>();
+        private Dictionary<byte[], byte[]> remoteLocalEnemyPointerMap = new Dictionary<byte[], byte[]>();
+
+        private List<byte[]> localEnemyPointers = new List<byte[]>();
 
         public void Initialize()
         {
@@ -73,33 +78,105 @@ namespace RE4MP
 
         public byte[] GET_POS_ENEMY_VALUE()
         {
-            return ReadMemory("base+00867594,94", 20);
+            return ReadMemory("base+00867594,94", ENEMY_POS_BYTE_COUNT);
         }
 
         public byte[] GET_POS_ENEMY_POINTER()
         {
-            return ReadMemory("base+00867594", 4);
+            var addr = ReadMemory("base+00867594", 4);
+
+            if (!localEnemyPointers.Any(x => x.SequenceEqual(addr)))
+            {
+                localEnemyPointers.Add(addr);
+            }
+
+            return addr;
         }
 
-        public void WRITE_POS_ENEMY(byte[] serverAddr, byte[] data)
+        public Dictionary<byte[], byte[]> GET_POS_ENEMY_DATA()
         {
-            FREEZE_ENEMY_POINTERS();
+            var data = new Dictionary<byte[], byte[]>();
 
-            if (!serverClientEnemyPointerMap.Any(x => x.Key.SequenceEqual(serverAddr)))
+            foreach(var addr in localEnemyPointers)
+            {
+                data.Add(addr, ReadMemory(Utils.ByteArrayToString(addr, 0x94), ENEMY_POS_BYTE_COUNT));
+            }
+
+            return data;
+        }
+
+        public Dictionary<byte[], byte[]> GET_HP_ENEMY_DATA_FOR_CLIENT()
+        {
+            var data = new Dictionary<byte[], byte[]>();
+
+            foreach (var addr in localEnemyPointers)
+            {
+                data.Add(addr, ReadMemory(Utils.ByteArrayToString(addr, 0x112c), ENEMY_HP_BYTE_COUNT));
+            }
+
+            return data;
+        }
+
+        public Dictionary<byte[], byte[]> GET_HP_ENEMY_DATA_FOR_SERVER()
+        {
+            var data = new Dictionary<byte[], byte[]>();
+
+            foreach (var addr in remoteLocalEnemyPointerMap)
+            {
+                data.Add(addr.Key, ReadMemory(Utils.ByteArrayToString(addr.Value, 0x112c), ENEMY_HP_BYTE_COUNT));
+            }
+
+            return data;
+        }
+
+        public void MAP_ENEMY_POINTER(byte[] serverAddr, byte[] data)
+        {
+            if (!remoteLocalEnemyPointerMap.Any(x => x.Key.SequenceEqual(serverAddr)))
             {
                 var clientPointer = GET_POS_ENEMY_POINTER();
-                if (serverClientEnemyPointerMap.Any(x => x.Value.SequenceEqual(clientPointer)))
+                if (remoteLocalEnemyPointerMap.Any(x => x.Value.SequenceEqual(clientPointer)) || serverAddr.All(x => x.Equals(0)) || clientPointer.All(x => x.Equals(0)))
                 {
-                    UNFREEZE_ENEMY_POINTERS();
                     return;
                 }
 
-                serverClientEnemyPointerMap.Add(serverAddr, clientPointer);
+                remoteLocalEnemyPointerMap.Add(serverAddr, clientPointer);
             }
+        }
 
-            WriteMemory("base+00867594", serverClientEnemyPointerMap.FirstOrDefault(x => x.Key.SequenceEqual(serverAddr)).Value);
-            WriteMemory("base+00867594,94", data);
-            UNFREEZE_ENEMY_POINTERS();
+        public void WRITE_ENEMY_POSITIONS_CLIENT(Dictionary<byte[], byte[]> positionMap)
+        {
+            foreach(var pos in positionMap)
+            {
+                if(remoteLocalEnemyPointerMap.Any(x => x.Key.SequenceEqual(pos.Key)))
+                {
+                    WriteMemory(Utils.ByteArrayToString(remoteLocalEnemyPointerMap.FirstOrDefault(x => x.Key.SequenceEqual(pos.Key)).Value, 0x94), pos.Value);
+                }
+            }
+        }
+
+        public void WRITE_ENEMY_HP_CLIENT(Dictionary<byte[], byte[]> hpMap)
+        {
+            foreach (var hp in hpMap)
+            {
+                if (remoteLocalEnemyPointerMap.Any(x => x.Key.SequenceEqual(hp.Key))
+                    && Utils.ConvertByteArrayToInt(ReadMemory(Utils.ByteArrayToString(remoteLocalEnemyPointerMap.FirstOrDefault(x => x.Key.SequenceEqual(hp.Key)).Value, 0x112c), ENEMY_HP_BYTE_COUNT)) 
+                        > Utils.ConvertByteArrayToInt(hp.Value))
+                {
+                    WriteMemory(Utils.ByteArrayToString(remoteLocalEnemyPointerMap.FirstOrDefault(x => x.Key.SequenceEqual(hp.Key)).Value, 0x112c), hp.Value);
+                }
+            }
+        }
+
+        public void WRITE_ENEMY_HP_SERVER(Dictionary<byte[], byte[]> hpMap)
+        {
+            foreach (var hp in hpMap)
+            {
+                if (localEnemyPointers.Any(x => x.SequenceEqual(hp.Key)) 
+                    && Utils.ConvertByteArrayToInt(ReadMemory(Utils.ByteArrayToString(hp.Key, 0x112c), ENEMY_HP_BYTE_COUNT)) > Utils.ConvertByteArrayToInt(hp.Value))
+                {
+                    WriteMemory(Utils.ByteArrayToString(hp.Key, 0x112c), hp.Value);
+                }
+            }
         }
 
         public void FREEZE_ENEMY_POINTERS()

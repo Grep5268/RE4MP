@@ -42,7 +42,7 @@ namespace RE4MP
                     AwesomeSockets.Buffers.Buffer.FinalizeBuffer(inBuf);
 
                     //parse message
-                    var res = Utils.Deserialize(AwesomeSockets.Buffers.Buffer.GetBuffer(inBuf));
+                    var res = Utils.Deserialize<Dictionary<string, byte[]>>(AwesomeSockets.Buffers.Buffer.GetBuffer(inBuf));
                     AwesomeSockets.Buffers.Buffer.ClearBuffer(inBuf);
 
                     //act on message
@@ -88,10 +88,14 @@ namespace RE4MP
             var outputData = new Dictionary<string, byte[]>();
 
             outputData.Add("write_pos_ally", trainer.GET_POS_ALLY());
+
             trainer.FREEZE_ENEMY_POINTERS();
             outputData.Add("write_pos_enemy_pointer", trainer.GET_POS_ENEMY_POINTER());
             outputData.Add("write_pos_enemy_value", trainer.GET_POS_ENEMY_VALUE());
             trainer.UNFREEZE_ENEMY_POINTERS();
+
+            outputData.Add("pos_enemy_data", Utils.ObjectToByteArray(trainer.GET_POS_ENEMY_DATA()));
+            outputData.Add("hp_enemy_data", Utils.ObjectToByteArray(trainer.GET_HP_ENEMY_DATA_FOR_CLIENT()));
 
             return outputData;
         }
@@ -99,6 +103,7 @@ namespace RE4MP
         private void HandleInputData(Dictionary<string, byte[]> data, Trainer trainer)
         {
             trainer.WRITE_POS_ALLY(data["write_pos_ally"]);
+            trainer.WRITE_ENEMY_HP_SERVER(Utils.Deserialize<Dictionary<byte[], byte[]>>(data["hp_enemy_data"]));
         }
     }
 }

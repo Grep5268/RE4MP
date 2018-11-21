@@ -23,13 +23,36 @@ namespace RE4MP
         }
 
         // Convert a byte array to an Object
-        public static Dictionary<string, byte[]> Deserialize(byte[] param)
+        public static T Deserialize<T>(byte[] param)
         {
             using (MemoryStream ms = new MemoryStream(param))
             {
                 IFormatter br = new BinaryFormatter();
-                return (Dictionary<string, byte[]>)br.Deserialize(ms);
+                return (T)br.Deserialize(ms);
             }
         }
+
+        public static string ByteArrayToString(byte[] ba, int offset = 0)
+        {
+            var newAddr = ConvertByteArrayToInt(ba) + offset;
+
+            var addr = BitConverter.GetBytes(newAddr).Reverse().ToArray();
+            StringBuilder hex = new StringBuilder(addr.Length * 2);
+            foreach (byte b in addr)
+                hex.AppendFormat("{0:x2}", b);
+            return hex.ToString();
+        }
+
+        public static int ConvertByteArrayToInt(byte[] b)
+        {
+            if(b.Length == 2)
+            {
+                return BitConverter.ToInt16(b, 0);
+            }
+
+            return BitConverter.ToInt32(b, 0);
+        }
+
+
     }
 }
