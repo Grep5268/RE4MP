@@ -25,7 +25,9 @@ namespace RE4MP
             var inBuf = AwesomeSockets.Buffers.Buffer.New(99999);
             var outBuf = AwesomeSockets.Buffers.Buffer.New(99999);
 
-            while(true)
+            this.SetupClientTrainer(trainer);
+
+            while (true)
             {
                 try
                 {
@@ -81,6 +83,12 @@ namespace RE4MP
         private void HandleInputData(Dictionary<string, byte[]> data, Trainer trainer)
         {
             trainer.WRITE_POS_ALLY(data["write_pos_ally"]);
+            trainer.WRITE_POS_ENEMY(data["write_pos_enemy_pointer"], data["write_pos_enemy_value"]);
+        }
+
+        private void SetupClientTrainer(Trainer trainer)
+        {
+            // set up memory here
         }
     }
 }

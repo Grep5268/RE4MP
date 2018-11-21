@@ -88,6 +88,10 @@ namespace RE4MP
             var outputData = new Dictionary<string, byte[]>();
 
             outputData.Add("write_pos_ally", trainer.GET_POS_ALLY());
+            trainer.FREEZE_ENEMY_POINTERS();
+            outputData.Add("write_pos_enemy_pointer", trainer.GET_POS_ENEMY_POINTER());
+            outputData.Add("write_pos_enemy_value", trainer.GET_POS_ENEMY_VALUE());
+            trainer.UNFREEZE_ENEMY_POINTERS();
 
             return outputData;
         }
