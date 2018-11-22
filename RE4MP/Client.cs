@@ -60,7 +60,9 @@ namespace RE4MP
                 }
                 catch (Exception e)
                 {
+                    Console.WriteLine(e.Message);
                     Console.WriteLine(e.StackTrace);
+
                     AwesomeSockets.Buffers.Buffer.ClearBuffer(outBuf);
                     AwesomeSockets.Buffers.Buffer.ClearBuffer(inBuf);
 
@@ -77,6 +79,8 @@ namespace RE4MP
 
             outputData.Add("write_pos_ally", trainer.GET_POS_ALLY());
 
+            outputData.Add("write_hp_ally", trainer.GET_HP_ALLY());
+
             outputData.Add("hp_enemy_data", Utils.ObjectToByteArray(trainer.GET_HP_ENEMY_DATA_FOR_SERVER()));
 
             return outputData;
@@ -85,7 +89,13 @@ namespace RE4MP
         private void HandleInputData(Dictionary<string, byte[]> data, Trainer trainer)
         {
             trainer.WRITE_POS_ALLY(data["write_pos_ally"]);
-            trainer.MAP_ENEMY_POINTER(data["write_pos_enemy_pointer"], data["write_pos_enemy_value"]);
+            trainer.WRITE_HP_ALLY(data["write_hp_ally"]);
+
+            if (data.ContainsKey("write_pos_enemy_pointer"))
+            {
+                trainer.MAP_ENEMY_POINTER(data["write_pos_enemy_pointer"], data["write_pos_enemy_value"]);
+            }
+
             trainer.WRITE_ENEMY_POSITIONS_CLIENT(Utils.Deserialize<Dictionary<byte[], byte[]>>(data["pos_enemy_data"]));
             trainer.WRITE_ENEMY_HP_CLIENT(Utils.Deserialize<Dictionary<byte[], byte[]>>(data["hp_enemy_data"]));
         }

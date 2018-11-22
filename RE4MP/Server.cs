@@ -73,6 +73,7 @@ namespace RE4MP
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
+                    Console.WriteLine(e.StackTrace);
 
                     AwesomeSockets.Buffers.Buffer.ClearBuffer(outBuf);
                     AwesomeSockets.Buffers.Buffer.ClearBuffer(inBuf);
@@ -88,11 +89,19 @@ namespace RE4MP
             var outputData = new Dictionary<string, byte[]>();
 
             outputData.Add("write_pos_ally", trainer.GET_POS_ALLY());
+            outputData.Add("write_hp_ally", trainer.GET_HP_ALLY());
 
-            trainer.FREEZE_ENEMY_POINTERS();
-            outputData.Add("write_pos_enemy_pointer", trainer.GET_POS_ENEMY_POINTER());
-            outputData.Add("write_pos_enemy_value", trainer.GET_POS_ENEMY_VALUE());
-            trainer.UNFREEZE_ENEMY_POINTERS();
+            //trainer.FREEZE_ENEMY_POINTERS();
+
+            var enemyPtr = trainer.GET_POS_ENEMY_POINTER();
+
+            if(enemyPtr != null)
+            {
+                outputData.Add("write_pos_enemy_pointer", enemyPtr);
+                outputData.Add("write_pos_enemy_value", trainer.GET_POS_ENEMY_VALUE());
+            }
+            
+            //trainer.UNFREEZE_ENEMY_POINTERS();
 
             outputData.Add("pos_enemy_data", Utils.ObjectToByteArray(trainer.GET_POS_ENEMY_DATA()));
             outputData.Add("hp_enemy_data", Utils.ObjectToByteArray(trainer.GET_HP_ENEMY_DATA_FOR_CLIENT()));
@@ -103,7 +112,12 @@ namespace RE4MP
         private void HandleInputData(Dictionary<string, byte[]> data, Trainer trainer)
         {
             trainer.WRITE_POS_ALLY(data["write_pos_ally"]);
-            trainer.WRITE_ENEMY_HP_SERVER(Utils.Deserialize<Dictionary<byte[], byte[]>>(data["hp_enemy_data"]));
+            trainer.WRITE_HP_ALLY(data["write_hp_ally"]);
+
+            if(data.ContainsKey("hp_enemy_data"))
+            {
+                trainer.WRITE_ENEMY_HP_SERVER(Utils.Deserialize<Dictionary<byte[], byte[]>>(data["hp_enemy_data"]));
+            }
         }
     }
 }

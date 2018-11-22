@@ -18,6 +18,7 @@ namespace RE4MP
         public Mem MemLib = new Mem();
 
         private Dictionary<byte[], byte[]> remoteLocalEnemyPointerMap = new Dictionary<byte[], byte[]>();
+        private Dictionary<byte[], byte[]> remoteEnemyPointerValueMap = new Dictionary<byte[], byte[]>(); //value is initial value
 
         private List<byte[]> localEnemyPointers = new List<byte[]>();
 
@@ -71,9 +72,19 @@ namespace RE4MP
             WriteMemory("base+857060,96", data);
         }
 
+        public void WRITE_HP_ALLY(byte[] data)
+        {
+            WriteMemory("base+85F718", data);
+        }
+
         public byte[] GET_POS_ALLY()
         {
             return ReadMemory("base+007FDB08,96", 18);
+        }
+
+        public byte[] GET_HP_ALLY()
+        {
+            return ReadMemory("base+85F714", 2);
         }
 
         public byte[] GET_POS_ENEMY_VALUE()
@@ -84,6 +95,11 @@ namespace RE4MP
         public byte[] GET_POS_ENEMY_POINTER()
         {
             var addr = ReadMemory("base+00867594", 4);
+
+            if(addr == null || addr.All(x => x == 0))
+            {
+                return null;
+            }
 
             if (!localEnemyPointers.Any(x => x.SequenceEqual(addr)))
             {
@@ -139,7 +155,18 @@ namespace RE4MP
                     return;
                 }
 
-                remoteLocalEnemyPointerMap.Add(serverAddr, clientPointer);
+                if (!remoteEnemyPointerValueMap.Any(x => x.Key.SequenceEqual(serverAddr)))
+                {
+                    remoteEnemyPointerValueMap.Add(serverAddr, data);
+                }
+
+                var pointerValue = ReadMemory(Utils.ByteArrayToString(clientPointer, 0x94), 18);
+
+                var mappedServerAddr = remoteEnemyPointerValueMap.FirstOrDefault(x => Math.Abs(pointerValue[3] - x.Value[3]) <= 4 && Math.Abs(pointerValue[10] - x.Value[10]) <= 3);
+                if (!mappedServerAddr.Equals(default(KeyValuePair<byte[], byte[]>)))
+                {
+                    remoteLocalEnemyPointerMap.Add(mappedServerAddr.Key, clientPointer);
+                }
             }
         }
 
