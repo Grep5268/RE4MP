@@ -3,6 +3,7 @@ using AwesomeSockets.Sockets;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,7 +45,15 @@ namespace RE4MP
                     Console.WriteLine("sent data");
 
                     //get response
+                    Stopwatch stopWatch = new Stopwatch();
+                    stopWatch.Start();
+                    
                     Tuple<int, EndPoint> received = AweSock.ReceiveMessage(server, inBuf);
+                    stopWatch.Stop();
+
+                    TimeSpan ts = stopWatch.Elapsed;
+                    trainer.timeSinceUpdate = ts.Milliseconds;
+
                     AwesomeSockets.Buffers.Buffer.FinalizeBuffer(inBuf);
 
                     //parse response
@@ -83,11 +92,14 @@ namespace RE4MP
 
             outputData.Add("hp_enemy_data", Utils.ObjectToByteArray(trainer.GET_HP_ENEMY_DATA_FOR_SERVER()));
 
+            outputData.Add("ally_area", trainer.GET_LOCAL_AREA());
+
             return outputData;
         }
 
         private void HandleInputData(Dictionary<string, byte[]> data, Trainer trainer)
         {
+            trainer.HANDLE_DIFFERENT_AREAS(data["ally_area"]);
             trainer.WRITE_POS_ALLY(data["write_pos_ally"]);
             trainer.WRITE_HP_ALLY(data["write_hp_ally"]);
 

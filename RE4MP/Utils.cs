@@ -53,6 +53,12 @@ namespace RE4MP
             return BitConverter.ToInt32(b, 0);
         }
 
-
+        public static byte[] ConvertIntToByteArrayToInt(int i)
+        {
+            byte[] intBytes = BitConverter.GetBytes(i);
+            if (!BitConverter.IsLittleEndian)
+                Array.Reverse(intBytes);
+            return intBytes;
+        }
     }
 }

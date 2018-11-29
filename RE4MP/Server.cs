@@ -6,6 +6,7 @@ using Network.Enums;
 using Network.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -38,7 +39,16 @@ namespace RE4MP
                 try
                 {
                     //get message
+                    Stopwatch stopWatch = new Stopwatch();
+                    stopWatch.Start();
+
                     Tuple<int, EndPoint> received = AweSock.ReceiveMessage(client, inBuf);
+
+                    stopWatch.Stop();
+
+                    TimeSpan ts = stopWatch.Elapsed;
+                    trainer.timeSinceUpdate = ts.Milliseconds;
+
                     AwesomeSockets.Buffers.Buffer.FinalizeBuffer(inBuf);
 
                     //parse message
@@ -46,7 +56,6 @@ namespace RE4MP
                     AwesomeSockets.Buffers.Buffer.ClearBuffer(inBuf);
 
                     //act on message
-                    //Console.WriteLine(string.Join(", ", res["pos_ally"]));
                     this.HandleInputData(res, trainer);
                 }
                 catch(Exception e)
@@ -105,12 +114,15 @@ namespace RE4MP
 
             outputData.Add("pos_enemy_data", Utils.ObjectToByteArray(trainer.GET_POS_ENEMY_DATA()));
             outputData.Add("hp_enemy_data", Utils.ObjectToByteArray(trainer.GET_HP_ENEMY_DATA_FOR_CLIENT()));
+            outputData.Add("ally_area", trainer.GET_LOCAL_AREA());
 
             return outputData;
         }
 
         private void HandleInputData(Dictionary<string, byte[]> data, Trainer trainer)
         {
+            trainer.HANDLE_DIFFERENT_AREAS(data["ally_area"]);
+
             trainer.WRITE_POS_ALLY(data["write_pos_ally"]);
             trainer.WRITE_HP_ALLY(data["write_hp_ally"]);
 

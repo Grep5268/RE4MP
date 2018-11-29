@@ -7,11 +7,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Memory;
 using System.Globalization;
+using System.Threading;
 
 namespace RE4MP
 {
     public class Trainer
     {
+        private const int ALLY_POS_BYTE_COUNT = 20;
+
         private const int ENEMY_POS_BYTE_COUNT = 20;
         private const int ENEMY_HP_BYTE_COUNT = 2;
 
@@ -21,6 +24,10 @@ namespace RE4MP
         private Dictionary<byte[], byte[]> remoteEnemyPointerValueMap = new Dictionary<byte[], byte[]>(); //value is initial value
 
         private List<byte[]> localEnemyPointers = new List<byte[]>();
+
+        public int timeSinceUpdate = 0;
+
+        private bool differentAreas = true;
 
         public void Initialize()
         {
@@ -66,10 +73,102 @@ namespace RE4MP
             return MemLib.readBytes(address, bytes);
         }
 
+        public byte[] GET_LOCAL_AREA()
+        {
+            return ReadMemory("base+85A788", 2);
+        }
+
+        private byte[] prevAllyPos = null;
+        private Timer posAllyTimer = null;
+
+        public void HANDLE_DIFFERENT_AREAS(byte[] area)
+        {
+            if(area != null && Utils.ConvertByteArrayToInt(area) != Utils.ConvertByteArrayToInt(this.GET_LOCAL_AREA()))
+            {
+                prevAllyPos = null;
+
+                if (posAllyTimer != null)
+                {
+                    posAllyTimer.Dispose();
+                }
+
+                posAllyTimer = null;
+
+                remoteLocalEnemyPointerMap = new Dictionary<byte[], byte[]>();
+                remoteEnemyPointerValueMap = new Dictionary<byte[], byte[]>();
+                localEnemyPointers = new List<byte[]>();
+
+                differentAreas = true;
+            }
+            else
+            {
+                differentAreas = false;
+            }
+        }
+
         public void WRITE_POS_ALLY(byte[] data)
         {
-            //new byte[] { 55, 197, 217, 75, 230, 197, 133, 125, 177, 70 }
-            WriteMemory("base+857060,96", data);
+            if (differentAreas) return;
+
+            if(prevAllyPos != null)
+            {
+                if (posAllyTimer != null)
+                {
+                    posAllyTimer.Dispose();
+                }
+
+                var prevPosCopy = new byte[ALLY_POS_BYTE_COUNT];
+                prevAllyPos.CopyTo(prevPosCopy, 0);
+
+                //var interval = timeSinceUpdate / 1000.0;
+                var interval = 15;
+                var count = 0;
+
+                posAllyTimer = new Timer((state) =>
+                {
+                    count++;
+                    var newData = new byte[ALLY_POS_BYTE_COUNT];
+                    data.CopyTo(newData, 0);
+
+                    //x
+                    var newX = Utils.ConvertByteArrayToInt(new byte[] { newData[0], newData[1], newData[2], newData[3] });
+                    var oldX = Utils.ConvertByteArrayToInt(new byte[] { prevPosCopy[0], prevPosCopy[1], prevPosCopy[2], prevPosCopy[3] });
+
+                    var xDiff = Utils.ConvertIntToByteArrayToInt(oldX + ((newX - oldX) * count / 5));
+
+                    newData[0] = xDiff[0];
+                    newData[1] = xDiff[1];
+                    newData[2] = xDiff[2];
+                    newData[3] = xDiff[3];
+
+                    //y
+                    /*
+                    var newY = Utils.ConvertByteArrayToInt(new byte[] { newData[4], newData[5] });
+                    var oldY = Utils.ConvertByteArrayToInt(new byte[] { prevAllyPos[4], prevAllyPos[5] });
+
+                    var yDiff = Utils.ConvertIntToByteArrayToInt(oldY + ((newY - oldY) * count / 10));
+
+                    newData[4] = yDiff[0];
+                    newData[5] = yDiff[1];
+                    */
+
+                    //z
+                    var newZ = Utils.ConvertByteArrayToInt(new byte[] { newData[8], newData[9], newData[10], newData[11] });
+                    var oldZ = Utils.ConvertByteArrayToInt(new byte[] { prevPosCopy[8], prevPosCopy[9], prevPosCopy[10], prevPosCopy[11] });
+
+                    var zDiff = Utils.ConvertIntToByteArrayToInt(oldZ + ((newZ - oldZ) * count / 5));
+
+                    newData[8] = zDiff[0];
+                    newData[9] = zDiff[1];
+                    newData[10] = zDiff[2];
+                    newData[11] = zDiff[3];
+
+                    WriteMemory("base+857060,94", newData);
+                }
+                , data, TimeSpan.FromMilliseconds(interval), TimeSpan.FromMilliseconds(60));
+            }
+
+            prevAllyPos = data;
         }
 
         public void WRITE_HP_ALLY(byte[] data)
@@ -79,7 +178,7 @@ namespace RE4MP
 
         public byte[] GET_POS_ALLY()
         {
-            return ReadMemory("base+007FDB08,96", 18);
+            return ReadMemory("base+007FDB08,94", ALLY_POS_BYTE_COUNT);
         }
 
         public byte[] GET_HP_ALLY()
@@ -147,10 +246,12 @@ namespace RE4MP
 
         public void MAP_ENEMY_POINTER(byte[] serverAddr, byte[] data)
         {
+            if (differentAreas) return;
+
             if (!remoteLocalEnemyPointerMap.Any(x => x.Key.SequenceEqual(serverAddr)))
             {
                 var clientPointer = GET_POS_ENEMY_POINTER();
-                if (remoteLocalEnemyPointerMap.Any(x => x.Value.SequenceEqual(clientPointer)) || serverAddr.All(x => x.Equals(0)) || clientPointer.All(x => x.Equals(0)))
+                if (clientPointer == null || remoteLocalEnemyPointerMap.Any(x => x.Value.SequenceEqual(clientPointer)) || serverAddr == null || serverAddr.All(x => x.Equals(0)) || clientPointer.All(x => x.Equals(0)))
                 {
                     return;
                 }
@@ -160,7 +261,7 @@ namespace RE4MP
                     remoteEnemyPointerValueMap.Add(serverAddr, data);
                 }
 
-                var pointerValue = ReadMemory(Utils.ByteArrayToString(clientPointer, 0x94), 18);
+                var pointerValue = ReadMemory(Utils.ByteArrayToString(clientPointer, 0x94), ENEMY_POS_BYTE_COUNT);
 
                 var mappedServerAddr = remoteEnemyPointerValueMap.FirstOrDefault(x => Math.Abs(pointerValue[3] - x.Value[3]) <= 4 && Math.Abs(pointerValue[10] - x.Value[10]) <= 3);
                 if (!mappedServerAddr.Equals(default(KeyValuePair<byte[], byte[]>)))
@@ -170,19 +271,86 @@ namespace RE4MP
             }
         }
 
+
+        private Dictionary<byte[], byte[]> enemyPrevPositionMap = new Dictionary<byte[], byte[]>();
+        private Dictionary<byte[], Timer> enemyPositionTimerMap = new Dictionary<byte[], Timer>();
+
         public void WRITE_ENEMY_POSITIONS_CLIENT(Dictionary<byte[], byte[]> positionMap)
         {
-            foreach(var pos in positionMap)
+            if (differentAreas) return;
+
+            foreach (var pos in positionMap)
             {
                 if(remoteLocalEnemyPointerMap.Any(x => x.Key.SequenceEqual(pos.Key)))
                 {
-                    WriteMemory(Utils.ByteArrayToString(remoteLocalEnemyPointerMap.FirstOrDefault(x => x.Key.SequenceEqual(pos.Key)).Value, 0x94), pos.Value);
+                    var localPointer = remoteLocalEnemyPointerMap.FirstOrDefault(x => x.Key.SequenceEqual(pos.Key)).Value;
+
+                    if (enemyPrevPositionMap.Any(x => x.Key.SequenceEqual(localPointer)))
+                    {
+                        if (enemyPositionTimerMap.Any(x => x.Key.SequenceEqual(localPointer)))
+                        {
+                            enemyPositionTimerMap.FirstOrDefault(x => x.Key.SequenceEqual(localPointer)).Value.Dispose();
+                            enemyPositionTimerMap = enemyPositionTimerMap.Where(x => !x.Key.SequenceEqual(localPointer))
+                                 .ToDictionary(pair => pair.Key,
+                                               pair => pair.Value);
+                        }
+
+                        var prevEnemyPos = enemyPrevPositionMap.FirstOrDefault(x => x.Key.SequenceEqual(localPointer)).Value;
+
+                        var prevPosCopy = new byte[ENEMY_POS_BYTE_COUNT];
+                        prevEnemyPos.CopyTo(prevPosCopy, 0);
+
+                        //var interval = timeSinceUpdate / 1000.0;
+                        var interval = 10;
+                        var count = 0;
+
+                        enemyPositionTimerMap.Add(localPointer, new Timer((state) =>
+                        {
+                            count++;
+                            var newData = new byte[ENEMY_POS_BYTE_COUNT];
+                            pos.Value.CopyTo(newData, 0);
+
+                            //x
+                            var newX = Utils.ConvertByteArrayToInt(new byte[] { newData[0], newData[1], newData[2], newData[3] });
+                            var oldX = Utils.ConvertByteArrayToInt(new byte[] { prevPosCopy[0], prevPosCopy[1], prevPosCopy[2], prevPosCopy[3] });
+
+                            var xDiff = Utils.ConvertIntToByteArrayToInt(oldX + ((newX - oldX) * count / 5));
+
+                            newData[0] = xDiff[0];
+                            newData[1] = xDiff[1];
+                            newData[2] = xDiff[2];
+                            newData[3] = xDiff[3];
+
+
+                            //z
+                            var newZ = Utils.ConvertByteArrayToInt(new byte[] { newData[8], newData[9], newData[10], newData[11] });
+                            var oldZ = Utils.ConvertByteArrayToInt(new byte[] { prevPosCopy[8], prevPosCopy[9], prevPosCopy[10], prevPosCopy[11] });
+
+                            var zDiff = Utils.ConvertIntToByteArrayToInt(oldZ + ((newZ - oldZ) * count / 5));
+
+                            newData[8] = zDiff[0];
+                            newData[9] = zDiff[1];
+                            newData[10] = zDiff[2];
+                            newData[11] = zDiff[3];
+
+                            WriteMemory(Utils.ByteArrayToString(localPointer, 0x94), newData);
+                        }
+                        , pos.Value, TimeSpan.FromMilliseconds(interval), TimeSpan.FromMilliseconds(50)));
+                    }
+
+                    enemyPrevPositionMap = enemyPrevPositionMap.Where(x => !x.Key.SequenceEqual(localPointer))
+                                 .ToDictionary(pair => pair.Key,
+                                               pair => pair.Value);
+
+                    enemyPrevPositionMap.Add(localPointer, pos.Value);
                 }
             }
         }
 
         public void WRITE_ENEMY_HP_CLIENT(Dictionary<byte[], byte[]> hpMap)
         {
+            if (differentAreas) return;
+
             foreach (var hp in hpMap)
             {
                 if (remoteLocalEnemyPointerMap.Any(x => x.Key.SequenceEqual(hp.Key))
@@ -196,6 +364,8 @@ namespace RE4MP
 
         public void WRITE_ENEMY_HP_SERVER(Dictionary<byte[], byte[]> hpMap)
         {
+            if (differentAreas) return;
+
             foreach (var hp in hpMap)
             {
                 if (localEnemyPointers.Any(x => x.SequenceEqual(hp.Key)) 
