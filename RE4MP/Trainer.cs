@@ -13,7 +13,7 @@ namespace RE4MP
 {
     public class Trainer
     {
-        private const int ALLY_POS_BYTE_COUNT = 20;
+        private const int LOCAL_POS_BYTE_COUNT = 20;
 
         private const int ENEMY_POS_BYTE_COUNT = 20;
         private const int ENEMY_HP_BYTE_COUNT = 2;
@@ -75,7 +75,7 @@ namespace RE4MP
 
         public byte[] GET_LOCAL_AREA()
         {
-            return ReadMemory("base+85A788", 2);
+            return ReadMemory(MemoryLocations.LOCAL_AREA, 2);
         }
 
         private byte[] prevAllyPos = null;
@@ -117,7 +117,7 @@ namespace RE4MP
                     posAllyTimer.Dispose();
                 }
 
-                var prevPosCopy = new byte[ALLY_POS_BYTE_COUNT];
+                var prevPosCopy = new byte[LOCAL_POS_BYTE_COUNT];
                 prevAllyPos.CopyTo(prevPosCopy, 0);
 
                 //var interval = timeSinceUpdate / 1000.0;
@@ -127,7 +127,7 @@ namespace RE4MP
                 posAllyTimer = new Timer((state) =>
                 {
                     count++;
-                    var newData = new byte[ALLY_POS_BYTE_COUNT];
+                    var newData = new byte[LOCAL_POS_BYTE_COUNT];
                     data.CopyTo(newData, 0);
 
                     //x
@@ -141,17 +141,6 @@ namespace RE4MP
                     newData[2] = xDiff[2];
                     newData[3] = xDiff[3];
 
-                    //y
-                    /*
-                    var newY = Utils.ConvertByteArrayToInt(new byte[] { newData[4], newData[5] });
-                    var oldY = Utils.ConvertByteArrayToInt(new byte[] { prevAllyPos[4], prevAllyPos[5] });
-
-                    var yDiff = Utils.ConvertIntToByteArrayToInt(oldY + ((newY - oldY) * count / 10));
-
-                    newData[4] = yDiff[0];
-                    newData[5] = yDiff[1];
-                    */
-
                     //z
                     var newZ = Utils.ConvertByteArrayToInt(new byte[] { newData[8], newData[9], newData[10], newData[11] });
                     var oldZ = Utils.ConvertByteArrayToInt(new byte[] { prevPosCopy[8], prevPosCopy[9], prevPosCopy[10], prevPosCopy[11] });
@@ -163,7 +152,7 @@ namespace RE4MP
                     newData[10] = zDiff[2];
                     newData[11] = zDiff[3];
 
-                    WriteMemory("base+857060,94", newData);
+                    WriteMemory(MemoryLocations.ALLY_POS, newData);
                 }
                 , data, TimeSpan.FromMilliseconds(interval), TimeSpan.FromMilliseconds(60));
             }
@@ -173,27 +162,27 @@ namespace RE4MP
 
         public void WRITE_HP_ALLY(byte[] data)
         {
-            WriteMemory("base+85F718", data);
+            WriteMemory(MemoryLocations.ALLY_HP, data);
         }
 
-        public byte[] GET_POS_ALLY()
+        public byte[] GET_LOCAL_POS()
         {
-            return ReadMemory("base+007FDB08,94", ALLY_POS_BYTE_COUNT);
+            return ReadMemory(MemoryLocations.LOCAL_POS, LOCAL_POS_BYTE_COUNT);
         }
 
-        public byte[] GET_HP_ALLY()
+        public byte[] GET_LOCAL_HP()
         {
-            return ReadMemory("base+85F714", 2);
+            return ReadMemory(MemoryLocations.LOCAL_HP, 2);
         }
 
         public byte[] GET_POS_ENEMY_VALUE()
         {
-            return ReadMemory("base+00867594,94", ENEMY_POS_BYTE_COUNT);
+            return ReadMemory(MemoryLocations.ENEMY_POS, ENEMY_POS_BYTE_COUNT);
         }
 
         public byte[] GET_POS_ENEMY_POINTER()
         {
-            var addr = ReadMemory("base+00867594", 4);
+            var addr = ReadMemory(MemoryLocations.ENEMY_POS_POINTER, 4);
 
             if(addr == null || addr.All(x => x == 0))
             {
@@ -374,17 +363,6 @@ namespace RE4MP
                     WriteMemory(Utils.ByteArrayToString(hp.Key, 0x112c), hp.Value);
                 }
             }
-        }
-
-        public void FREEZE_ENEMY_POINTERS()
-        {
-            WriteNop("base+2B19F2", 6);
-        }
-
-        public void UNFREEZE_ENEMY_POINTERS()
-        {
-            WriteMemory("base+2B19F2", new byte[] { 0x89, 0x35, 0x94, 0x75, 0xA7, 0x01 });
-            
         }
     }
 }

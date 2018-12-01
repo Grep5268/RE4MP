@@ -97,8 +97,8 @@ namespace RE4MP
         {
             var outputData = new Dictionary<string, byte[]>();
 
-            outputData.Add("write_pos_ally", trainer.GET_POS_ALLY());
-            outputData.Add("write_hp_ally", trainer.GET_HP_ALLY());
+            outputData.Add("write_pos_ally", trainer.GET_LOCAL_POS());
+            outputData.Add("write_hp_ally", trainer.GET_LOCAL_HP());
 
             //trainer.FREEZE_ENEMY_POINTERS();
 
