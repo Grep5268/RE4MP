@@ -61,6 +61,7 @@ namespace RE4MP
                 catch(Exception e)
                 {
                     Console.WriteLine(e.Message);
+                    Console.WriteLine(e.StackTrace);
 
                     AwesomeSockets.Buffers.Buffer.ClearBuffer(outBuf);
                     AwesomeSockets.Buffers.Buffer.ClearBuffer(inBuf);

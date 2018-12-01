@@ -14,8 +14,10 @@ namespace RE4MP
         // Convert an object to a byte array
         public static byte[] ObjectToByteArray(Object obj)
         {
+            if (obj == null)
+                return null;
             BinaryFormatter bf = new BinaryFormatter();
-            using (var ms = new MemoryStream())
+            using (MemoryStream ms = new MemoryStream())
             {
                 bf.Serialize(ms, obj);
                 return ms.ToArray();
@@ -27,8 +29,11 @@ namespace RE4MP
         {
             using (MemoryStream ms = new MemoryStream(param))
             {
-                IFormatter br = new BinaryFormatter();
-                return (T)br.Deserialize(ms);
+                BinaryFormatter binForm = new BinaryFormatter();
+                ms.Write(param, 0, param.Length);
+                ms.Seek(0, SeekOrigin.Begin);
+                T obj = (T)binForm.Deserialize(ms);
+                return obj;
             }
         }
 

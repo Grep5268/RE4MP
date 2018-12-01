@@ -252,7 +252,7 @@ namespace RE4MP
 
                 var pointerValue = ReadMemory(Utils.ByteArrayToString(clientPointer, 0x94), ENEMY_POS_BYTE_COUNT);
 
-                var mappedServerAddr = remoteEnemyPointerValueMap.FirstOrDefault(x => Math.Abs(pointerValue[3] - x.Value[3]) <= 4 && Math.Abs(pointerValue[10] - x.Value[10]) <= 3);
+                var mappedServerAddr = remoteEnemyPointerValueMap.FirstOrDefault(x => x.Key.Take(2).ToArray().SequenceEqual(clientPointer.Take(2).ToArray()));
                 if (!mappedServerAddr.Equals(default(KeyValuePair<byte[], byte[]>)))
                 {
                     remoteLocalEnemyPointerMap.Add(mappedServerAddr.Key, clientPointer);
