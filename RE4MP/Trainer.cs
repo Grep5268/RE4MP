@@ -364,5 +364,34 @@ namespace RE4MP
                 }
             }
         }
+
+        public void WRITE_GIGANTE_HP(byte[] data)
+        {
+            if (data == null) return;
+            if (differentAreas) return;
+
+            if (Utils.ConvertByteArrayToInt(GET_GIGANTE_HP()) > Utils.ConvertByteArrayToInt(data))
+            {
+                WriteMemory(MemoryLocations.GIGANTE_HP, data);
+            }
+        }
+
+        public byte[] GET_GIGANTE_HP()
+        {
+            return ReadMemory(MemoryLocations.GIGANTE_HP, ENEMY_HP_BYTE_COUNT);
+        }
+
+        public void WRITE_GIGANTE_POS(byte[] data)
+        {
+            if (data == null) return;
+            if (differentAreas) return;
+
+            WriteMemory(MemoryLocations.GIGANTE_POS, data);
+        }
+
+        public byte[] GET_GIGANTE_POS()
+        {
+            return ReadMemory(MemoryLocations.GIGANTE_POS, ENEMY_POS_BYTE_COUNT);
+        }
     }
 }

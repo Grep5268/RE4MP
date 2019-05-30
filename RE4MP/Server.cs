@@ -117,6 +117,9 @@ namespace RE4MP
             outputData.Add("hp_enemy_data", Utils.ObjectToByteArray(trainer.GET_HP_ENEMY_DATA_FOR_CLIENT()));
             outputData.Add("ally_area", trainer.GET_LOCAL_AREA());
 
+            outputData.Add("hp_gigante", trainer.GET_GIGANTE_HP());
+            outputData.Add("pos_gigante", trainer.GET_GIGANTE_POS());
+
             return outputData;
         }
 
@@ -127,7 +130,9 @@ namespace RE4MP
             trainer.WRITE_POS_ALLY(data["write_pos_ally"]);
             trainer.WRITE_HP_ALLY(data["write_hp_ally"]);
 
-            if(data.ContainsKey("hp_enemy_data"))
+            trainer.WRITE_GIGANTE_HP(data["hp_gigante"]);
+
+            if (data.ContainsKey("hp_enemy_data"))
             {
                 trainer.WRITE_ENEMY_HP_SERVER(Utils.Deserialize<Dictionary<byte[], byte[]>>(data["hp_enemy_data"]));
             }

@@ -17,5 +17,8 @@ namespace RE4MP
         public static string LOCAL_AREA = "base+85BE90";
         public static string LOCAL_HP = "base+85BE94";
         public static string LOCAL_POS = "base+007FCB08,94";
+
+        public static string GIGANTE_HP = "base+7FCB18,324";
+        public static string GIGANTE_POS = "base+7FCB18,94";
     }
 }
