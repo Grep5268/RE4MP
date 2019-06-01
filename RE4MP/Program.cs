@@ -18,17 +18,6 @@ namespace RE4MP
                 var trainer = new Trainer();
                 trainer.Initialize();
 
-                //trainer.processCommand(command);
-
-                //Test area
-                /*string command;
-                do
-                {
-                    command = Console.ReadLine();
-                    trainer.processCommand(command);
-
-                } while (command != "quit");*/
-
                 Console.WriteLine("Are you the 'server' or 'client'? (type server or client)");
                 if (Console.ReadLine().Equals("server"))
                 {

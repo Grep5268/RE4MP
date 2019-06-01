@@ -10,6 +10,13 @@ namespace RE4MP
     {
         public static string ALLY_HP = "base+85BE98";
         public static string ALLY_POS = "base+8537E0,94";
+        public static string ALLY_POS2 = "base+8537E0,110";
+        public static string ALLY_POS3 = "base+8066C4,408,F4,70";
+        public static string ALLY_POS4 = "base+8066C4,408,F4,7C";
+        public static string ALLY_POS5 = "base+8066C4,408,F4,7C";
+        public static string ALLY_POS6 = "base+855160,408,F4,18";
+        
+
 
         public static string ENEMY_POS = "base+00863D08,94";
         public static string ENEMY_POS_POINTER = "base+00863D08";

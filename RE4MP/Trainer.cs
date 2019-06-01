@@ -153,6 +153,11 @@ namespace RE4MP
                     newData[11] = zDiff[3];
 
                     WriteMemory(MemoryLocations.ALLY_POS, newData);
+                    WriteMemory(MemoryLocations.ALLY_POS2, newData);
+                    WriteMemory(MemoryLocations.ALLY_POS3, newData);
+                    WriteMemory(MemoryLocations.ALLY_POS4, newData);
+                    WriteMemory(MemoryLocations.ALLY_POS5, newData);
+                    WriteMemory(MemoryLocations.ALLY_POS6, newData);
                 }
                 , data, TimeSpan.FromMilliseconds(interval), TimeSpan.FromMilliseconds(60));
             }
