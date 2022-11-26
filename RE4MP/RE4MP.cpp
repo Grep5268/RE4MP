@@ -134,7 +134,8 @@ void CodeInjection(DWORD base_addr)
     OverwriteBytes((base_addr + 0x35e9df), fiveNop, 5); // odd math funcs
     OverwriteBytes((base_addr + 0x35eb00), fiveNop, 5);
 
-    // Disable cSubChar gravity (to be set by network player)
+    // spawn subChar everywhere
+    OverwriteBytes((base_addr + 0x2c520b), twoNop, 2);
 }
 
 int* PlayerPointer(DWORD base_addr)
