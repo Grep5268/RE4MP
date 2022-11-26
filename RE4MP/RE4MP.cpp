@@ -34,11 +34,49 @@ DWORD WINAPI MainThread(LPVOID param) {
     //std::string wstr = std::to_string(base_addr + 0x3567e0);
     
     while (true) {
+
+        // cSubChar manual control
+        float moveFactor = 20.0;
         if (GetAsyncKeyState(VK_F5)) {
-            float pos[3] = { -35103.39844, 34.03607178, -3051.361572 };
+            float* pos = GetPlayerPosition(base_addr);
             MoveSubChar(base_addr, pos);
         }
 
+        if (GetAsyncKeyState(VK_UP)) {
+            float* pos = GetSubCharDestinationPos(base_addr);
+            pos[2] += moveFactor;
+            MoveSubChar(base_addr, pos);
+        }
+        else if (GetAsyncKeyState(VK_DOWN)) {
+            float* pos = GetSubCharDestinationPos(base_addr);
+            pos[2] -= moveFactor;
+            MoveSubChar(base_addr, pos);
+        }
+
+        if (GetAsyncKeyState(VK_LEFT)) {
+            float* pos = GetSubCharDestinationPos(base_addr);
+            pos[0] += moveFactor;
+            MoveSubChar(base_addr, pos);
+        }
+        else if (GetAsyncKeyState(VK_RIGHT)) {
+            float* pos = GetSubCharDestinationPos(base_addr);
+            pos[0] -= moveFactor;
+            MoveSubChar(base_addr, pos);
+        }
+
+        // y pos
+        if (GetAsyncKeyState(VK_F6)) {
+            float* pos = GetSubCharPos(base_addr);
+            pos[1] += moveFactor;
+            MoveSubChar(base_addr, pos);
+        }
+        else if (GetAsyncKeyState(VK_F7)) {
+            float* pos = GetSubCharPos(base_addr);
+            pos[1] -= moveFactor;
+            MoveSubChar(base_addr, pos);
+        }
+
+        // exit scenario
         if (GetAsyncKeyState(VK_END)) {
             break;
         }
@@ -78,9 +116,36 @@ void HookFunctions(DWORD base_addr)
 
 void CodeInjection(DWORD base_addr)
 {
-    // Overwrite cSubChar destination data writes (TODO set it to itself instead of all this jump nonsense)
-    char bytes[0x5] = { 0xe9, 0x15, 0x01, 00, 00 }; //jmp    11a <_main+0x11a>
-    OverwriteBytes((base_addr + 0x35e8f4), bytes, 5);
+    char twoNop[2] = { 0x90, 0x90 }; //nop
+    char threeNop[3] = { 0x90, 0x90, 0x90 }; //nop
+    char fiveNop[5] = { 0x90, 0x90, 0x90, 0x90, 0x90 }; //nop
+
+    // Disable cSubChar setting partner location for movement
+    OverwriteBytes((base_addr + 0x35e9fa), twoNop, 2);
+    OverwriteBytes((base_addr + 0x35ea02), threeNop, 3);
+    OverwriteBytes((base_addr + 0x35ea0b), threeNop, 3);
+
+    OverwriteBytes((base_addr + 0x35e9cb), twoNop, 2);
+    OverwriteBytes((base_addr + 0x35e9cd), threeNop, 3);
+    OverwriteBytes((base_addr + 0x35e9d0), threeNop, 3);
+
+    OverwriteBytes((base_addr + 0x35eb4c), fiveNop, 5); // Routing
+
+    OverwriteBytes((base_addr + 0x35e9df), fiveNop, 5); // odd math funcs
+    OverwriteBytes((base_addr + 0x35eb00), fiveNop, 5);
+
+    // Disable cSubChar gravity (to be set by network player)
+}
+
+int* PlayerPointer(DWORD base_addr)
+{
+    return (int*)(base_addr + 0x857054);
+}
+
+float* GetPlayerPosition(DWORD base_addr)
+{
+    int* ptr = PlayerPointer(base_addr);
+    return (float*)((*ptr) + 0x94);
 }
 
 int* SubCharPointer(DWORD base_addr) 
@@ -88,10 +153,29 @@ int* SubCharPointer(DWORD base_addr)
     return (int*)(base_addr + 0x857060);
 }
 
-void MoveSubChar(DWORD base_addr, float* toPos)
+float* GetSubCharPos(DWORD base_addr)
 {
     int* ptr = SubCharPointer(base_addr);
-     *(float*)((*ptr) + 0x450) = toPos[0];
-     *(float*)((*ptr) + 0x454) = toPos[1];
-     *(float*)((*ptr) + 0x458) = toPos[2];
+    return (float*)((*ptr) + 0x94);
+}
+
+float* GetSubCharDestinationPos(DWORD base_addr) 
+{
+    int* ptr = SubCharPointer(base_addr);
+    return (float*)((*ptr) + 0x450);
+}
+
+char* GetSubCharGravityCheck(DWORD base_addr)
+{
+    int* ptr = SubCharPointer(base_addr);
+    return (char*)((*ptr) + 0x2ce);
+}
+
+void MoveSubChar(DWORD base_addr, float* toPos)
+{
+    float* ptr = GetSubCharDestinationPos(base_addr);
+    *GetSubCharGravityCheck(base_addr) = 2; // disable grabity
+    ptr[0] = toPos[0];
+    ptr[1] = toPos[1];
+    ptr[2] = toPos[2];
 }
