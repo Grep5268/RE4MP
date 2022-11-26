@@ -142,7 +142,7 @@
     <ClCompile Include="RE4MP.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="RE$MP.h" />
+    <ClInclude Include="RE4MP.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
