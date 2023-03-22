@@ -14,11 +14,12 @@ HANDLE handle;
 
 typedef __int64(__thiscall* fn_cSubChar_movePos)(int cSubCharPtr, std::vector<float>* toPos, float spd);
 fn_cSubChar_movePos cSubChar_movePos;
-//std::vector<float> *pos = new std::vector<float>{ -41085.26172, 15.20379639, -3521.290771 };
-//cSubChar_movePos(*(int*)(base_addr + 0x857060), pos, spd); // subchar pointer dereferenced, function applies offset
 
 typedef __int64(__fastcall* fn_cSubChar_move)(int cSubCharPtr);
 fn_cSubChar_move cSubChar_move;
+
+typedef int(__thiscall* fn_cManager_cEm__create)(int* emMgr, uint32_t id);
+fn_cManager_cEm__create cManager_cEm__create;
 
 DWORD WINAPI MainThread(LPVOID param) {
 
@@ -35,9 +36,13 @@ DWORD WINAPI MainThread(LPVOID param) {
     
     while (true) {
 
+        if (GetAsyncKeyState(VK_F5)) {
+            cManager_cEm__create(GetEmMgrPointer(base_addr), 44);
+        }
+
         // cSubChar manual control
         float moveFactor = 20.0;
-        if (GetAsyncKeyState(VK_F5)) {
+        if (GetAsyncKeyState(VK_NUMPAD0)) {
             float* pos = GetPlayerPosition(base_addr);
             MoveSubChar(base_addr, pos);
         }
@@ -112,6 +117,8 @@ void HookFunctions(DWORD base_addr)
 {
     cSubChar_movePos = (fn_cSubChar_movePos)(base_addr + 0x3567e0); //0x7567e0
     cSubChar_move = (fn_cSubChar_move)(base_addr + 0x361a70);
+    cManager_cEm__create = (fn_cManager_cEm__create)(base_addr + 0x1b2350);
+
 }
 
 void CodeInjection(DWORD base_addr)
@@ -121,7 +128,7 @@ void CodeInjection(DWORD base_addr)
     char fiveNop[5] = { 0x90, 0x90, 0x90, 0x90, 0x90 }; //nop
 
     // Disable cSubChar setting partner location for movement
-    OverwriteBytes((base_addr + 0x35e9fa), twoNop, 2);
+    /*OverwriteBytes((base_addr + 0x35e9fa), twoNop, 2);
     OverwriteBytes((base_addr + 0x35ea02), threeNop, 3);
     OverwriteBytes((base_addr + 0x35ea0b), threeNop, 3);
 
@@ -133,9 +140,15 @@ void CodeInjection(DWORD base_addr)
 
     OverwriteBytes((base_addr + 0x35e9df), fiveNop, 5); // odd math funcs
     OverwriteBytes((base_addr + 0x35eb00), fiveNop, 5);
+    */
 
     // spawn subChar everywhere
-    OverwriteBytes((base_addr + 0x2c520b), twoNop, 2);
+    //OverwriteBytes((base_addr + 0x2c520b), twoNop, 2);
+}
+
+int* GetEmMgrPointer(DWORD base_addr)
+{
+    return (int*)(base_addr + 0x7fDB04);
 }
 
 int* PlayerPointer(DWORD base_addr)

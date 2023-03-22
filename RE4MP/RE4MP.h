@@ -4,6 +4,7 @@
 void HookFunctions(DWORD base_address);
 void CodeInjection(DWORD base_addr);
 
+int* GetEmMgrPointer(DWORD base_addr);
 int* PlayerPointer(DWORD base_addr);
 float* GetPlayerPosition(DWORD base_addr);
 
