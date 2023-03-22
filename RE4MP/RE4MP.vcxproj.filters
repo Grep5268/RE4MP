@@ -18,9 +18,15 @@
     <ClCompile Include="RE4MP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="detours.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RE4MP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="detours.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

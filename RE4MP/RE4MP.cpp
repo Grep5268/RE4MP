@@ -3,6 +3,7 @@
 //
 
 #include <Windows.h>
+#include "detours.h"
 #include <iostream>
 #include <string>
 #include <stdio.h>
@@ -21,6 +22,43 @@ fn_cSubChar_move cSubChar_move;
 typedef int(__thiscall* fn_cManager_cEm__create)(int* emMgr, uint32_t id);
 fn_cManager_cEm__create cManager_cEm__create;
 
+typedef int(__thiscall* fn_cManager_cEm__construct)(int* emMgr, int emMemory, uint8_t npcId);
+fn_cManager_cEm__construct cManager_cEm__construct;
+
+typedef int(__cdecl* fn_EmReadSearch)(uint8_t npcId, void* data_addr, uint32_t malloc_size);
+fn_EmReadSearch EmReadSearch;
+
+int HookedEmReadSearch(uint8_t npcId, void* data_addr, uint32_t malloc_size)
+{
+    if (npcId == 0x44)
+    {
+        npcId = 0x20;
+    }
+    
+    /*
+    HMODULE hUser32 = LoadLibraryA("user32.dll");
+
+    if (hUser32 != NULL)
+    {
+        // Get the address of the MessageBox function
+        FARPROC pMessageBox = GetProcAddress(hUser32, "MessageBoxA");
+
+        if (pMessageBox != NULL)
+        {
+            // Call the MessageBox function
+            ((void (WINAPI*)(HWND, LPCSTR, LPCSTR, UINT))pMessageBox)(NULL, std::to_string(npcId).c_str(), "Injected DLL", MB_OK);
+        }
+
+        // Free the library
+        FreeLibrary(hUser32);
+    }*/
+
+    // Do something before calling the original function, such as logging or modifying arguments
+    int result = EmReadSearch(npcId, data_addr, malloc_size);
+    // Do something after the original function returns, such as modifying the result or logging
+    return result;
+}
+
 DWORD WINAPI MainThread(LPVOID param) {
 
     DWORD base_addr = (DWORD)GetModuleHandleA(0);
@@ -37,7 +75,7 @@ DWORD WINAPI MainThread(LPVOID param) {
     while (true) {
 
         if (GetAsyncKeyState(VK_F5)) {
-            cManager_cEm__create(GetEmMgrPointer(base_addr), 44);
+            cManager_cEm__create(GetEmMgrPointer(base_addr), 0x44);
         }
 
         // cSubChar manual control
@@ -93,17 +131,18 @@ DWORD WINAPI MainThread(LPVOID param) {
     return 0;
 }
 
-
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID l)
 {
         switch (reason)
-    {
-    case DLL_PROCESS_ATTACH:
-        CreateThread(NULL, NULL, MainThread, hModule, NULL, NULL);
-        break;
-    default:
-        break;
-    }
+        {
+        case DLL_PROCESS_ATTACH:
+            CreateThread(NULL, NULL, MainThread, hModule, NULL, NULL);
+
+            break;
+        case DLL_PROCESS_DETACH:
+        default:
+            break;
+        }
 
     return TRUE;
 }
@@ -119,6 +158,12 @@ void HookFunctions(DWORD base_addr)
     cSubChar_move = (fn_cSubChar_move)(base_addr + 0x361a70);
     cManager_cEm__create = (fn_cManager_cEm__create)(base_addr + 0x1b2350);
 
+    // detour
+    //DetourTransactionBegin();
+    //DetourUpdateThread(GetCurrentThread());
+    //EmReadSearch = (fn_EmReadSearch)(base_addr + 0x2AE8D0);
+   // DetourAttach(&(PVOID&)EmReadSearch, HookedEmReadSearch);
+   // DetourTransactionCommit();
 }
 
 void CodeInjection(DWORD base_addr)
