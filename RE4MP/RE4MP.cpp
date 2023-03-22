@@ -19,8 +19,8 @@ fn_cSubChar_movePos cSubChar_movePos;
 typedef __int64(__fastcall* fn_cSubChar_move)(int cSubCharPtr);
 fn_cSubChar_move cSubChar_move;
 
-typedef int(__thiscall* fn_cManager_cEm__create)(int* emMgr, uint32_t id);
-fn_cManager_cEm__create cManager_cEm__create;
+typedef int(__thiscall* fn_cManager_cEm__createBack)(int* emMgr, uint32_t id);
+fn_cManager_cEm__createBack cManager_cEm__createBack;
 
 typedef int(__thiscall* fn_cManager_cEm__construct)(int* emMgr, int emMemory, uint8_t npcId);
 fn_cManager_cEm__construct cManager_cEm__construct;
@@ -75,7 +75,7 @@ DWORD WINAPI MainThread(LPVOID param) {
     while (true) {
 
         if (GetAsyncKeyState(VK_F5)) {
-            cManager_cEm__create(GetEmMgrPointer(base_addr), 0x44);
+            cManager_cEm__createBack(GetEmMgrPointer(base_addr), 0x4);
         }
 
         // cSubChar manual control
@@ -156,7 +156,7 @@ void HookFunctions(DWORD base_addr)
 {
     cSubChar_movePos = (fn_cSubChar_movePos)(base_addr + 0x3567e0); //0x7567e0
     cSubChar_move = (fn_cSubChar_move)(base_addr + 0x361a70);
-    cManager_cEm__create = (fn_cManager_cEm__create)(base_addr + 0x1b2350);
+    cManager_cEm__createBack = (fn_cManager_cEm__createBack)(base_addr + 0x1b23f0);
 
     // detour
     //DetourTransactionBegin();
