@@ -171,6 +171,10 @@ void CodeInjection(DWORD base_addr)
     char twoNop[2] = { 0x90, 0x90 }; //nop
     char threeNop[3] = { 0x90, 0x90, 0x90 }; //nop
     char fiveNop[5] = { 0x90, 0x90, 0x90, 0x90, 0x90 }; //nop
+    char sixNop[6] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }; //nop
+
+    // Disable Luis partner set
+    OverwriteBytes((base_addr + 0x4e8a41), sixNop, 6);
 
     // Disable cSubChar setting partner location for movement
     /*OverwriteBytes((base_addr + 0x35e9fa), twoNop, 2);
