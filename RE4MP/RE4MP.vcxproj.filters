@@ -29,5 +29,11 @@
     <ClInclude Include="detours.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="hooks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Re4Detours.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

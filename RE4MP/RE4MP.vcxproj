@@ -148,6 +148,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="detours.h" />
+    <ClInclude Include="hooks.h" />
+    <ClInclude Include="Re4Detours.h" />
     <ClInclude Include="RE4MP.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
