@@ -30,10 +30,30 @@ DWORD WINAPI MainThread(LPVOID param) {
     
     while (true) {
 
-        int* playerTwoPtr = nullptr;
+        
         if (GetAsyncKeyState(VK_F5)) {
             // playerTwoPtr + 0x94
             playerTwoPtr = (int*)cManager_cEm__createBack(GetEmMgrPointer(base_addr), 0x4);
+        
+            /*
+            HMODULE hUser32 = LoadLibraryA("user32.dll");
+
+            if (hUser32 != NULL)
+            {
+                // Get the address of the MessageBox function
+                FARPROC pMessageBox = GetProcAddress(hUser32, "MessageBoxA");
+
+                if (pMessageBox != NULL)
+                {
+                    // Call the MessageBox function
+                    ((void (WINAPI*)(HWND, LPCSTR, LPCSTR, UINT))pMessageBox)(NULL, std::to_string(npcId).c_str(), "Injected DLL", MB_OK);
+                }
+
+                // Free the library
+                FreeLibrary(hUser32);
+            }
+            */
+
         }
 
         // cSubChar manual control

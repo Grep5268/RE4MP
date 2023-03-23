@@ -14,6 +14,11 @@ fn_cManager_cEm__construct cManager_cEm__construct;
 typedef int(__cdecl* fn_EmReadSearch)(uint8_t npcId, void* data_addr, uint32_t malloc_size);
 fn_EmReadSearch EmReadSearch;
 
+typedef void(__thiscall* fn_cSubLuis_think)(void* luis);
+fn_cSubLuis_think CSubLuisThink;
+
+typedef BOOL(__cdecl* fn_RouteCkToPos)(void* cEm, float* pPos, float* pDest, uint32_t mode, float* pMax);
+fn_RouteCkToPos RouteCkToPos;
 
 int* GetEmMgrPointer(DWORD base_addr)
 {
@@ -89,7 +94,7 @@ void CodeInjection(HANDLE handle, DWORD base_addr)
 
     // Disable Luis partner set and move
     OverwriteBytes(handle, (base_addr + 0x4e8a41), sixNop, 6);
-    OverwriteBytes(handle, (base_addr + 0x4ea021), fiveNop, 5);
+    //OverwriteBytes(handle, (base_addr + 0x4ea021), fiveNop, 5);
 
     // Disable cSubChar setting partner location for movement
     /*OverwriteBytes((base_addr + 0x35e9fa), twoNop, 2);

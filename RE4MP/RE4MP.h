@@ -1,5 +1,6 @@
 #pragma once
 #include <Windows.h>
+#include "Cache.h"
 
 void HookFunctions(DWORD base_address);
 void CodeInjection(DWORD base_addr);
