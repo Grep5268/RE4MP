@@ -15,24 +15,17 @@ void __fastcall HookedCSubLuisThink(void* luis, void* notUsed)
 
 BOOL __cdecl HookedRouteCkToPos(void* cEm, float* pPos, float* pDest, uint32_t mode, float* pMax)
 {
-    HMODULE hUser32 = LoadLibraryA("user32.dll");
+    float* pos;
 
-    if (hUser32 != NULL)
+    if ((int)cEm == (int)playerTwoPtr)
     {
-        // Get the address of the MessageBox function
-        FARPROC pMessageBox = GetProcAddress(hUser32, "MessageBoxA");
-
-        if (pMessageBox != NULL && ((int)cEm == (int)playerTwoPtr))
-        {
-            // Call the MessageBox function
-            ((void (WINAPI*)(HWND, LPCSTR, LPCSTR, UINT))pMessageBox)(NULL, std::to_string((int)cEm).c_str(), "Injected DLL", MB_OK);
-        }
-
-        // Free the library
-        FreeLibrary(hUser32);
+        pos = GetSubCharPos(base_addr);
+    }
+    else {
+        pos = pDest;
     }
 
-    BOOL res = RouteCkToPos(cEm, pPos, pDest, mode, pMax);
+    BOOL res = RouteCkToPos(cEm, pos, pDest, mode, pMax);
 
     // Do something after the original function returns, such as modifying the result or logging
     return res;

@@ -17,7 +17,7 @@ HANDLE handle;
 
 DWORD WINAPI MainThread(LPVOID param) {
 
-    DWORD base_addr = (DWORD)GetModuleHandleA(0);
+    base_addr = (DWORD)GetModuleHandleA(0);
     HWND hwnd = FindWindowA(NULL, "Resident Evil 4"); // HWND (Windows window) by Window Name
     
     GetWindowThreadProcessId(hwnd, &procID); // Getting our Process ID, as an ex. like 000027AC
