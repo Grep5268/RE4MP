@@ -75,7 +75,9 @@ DWORD WINAPI MainThread(LPVOID param) {
     while (true) {
 
         if (GetAsyncKeyState(VK_F5)) {
-            cManager_cEm__createBack(GetEmMgrPointer(base_addr), 0x4);
+            // playerTwoPtr + 0x94
+            int playerTwoPtr = cManager_cEm__createBack(GetEmMgrPointer(base_addr), 0x4);
+
         }
 
         // cSubChar manual control
@@ -173,8 +175,9 @@ void CodeInjection(DWORD base_addr)
     char fiveNop[5] = { 0x90, 0x90, 0x90, 0x90, 0x90 }; //nop
     char sixNop[6] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }; //nop
 
-    // Disable Luis partner set
+    // Disable Luis partner set and move
     OverwriteBytes((base_addr + 0x4e8a41), sixNop, 6);
+    OverwriteBytes((base_addr + 0x4ea021), fiveNop, 5);
 
     // Disable cSubChar setting partner location for movement
     /*OverwriteBytes((base_addr + 0x35e9fa), twoNop, 2);
@@ -198,6 +201,11 @@ void CodeInjection(DWORD base_addr)
 int* GetEmMgrPointer(DWORD base_addr)
 {
     return (int*)(base_addr + 0x7fDB04);
+}
+
+int* GetEmMgrEmListPointer(DWORD base_addr)
+{
+    return (int*)(base_addr + 0x7fDB04 + 0x14);
 }
 
 int* PlayerPointer(DWORD base_addr)
