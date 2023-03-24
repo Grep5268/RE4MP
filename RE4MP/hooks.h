@@ -41,6 +41,11 @@ float* GetPlayerPosition(DWORD base_addr)
     return (float*)((*ptr) + 0x94);
 }
 
+float* GetCEmPos(int* cEmAddr)
+{
+    return (float*)(cEmAddr + 0x91);
+}
+
 int* SubCharPointer(DWORD base_addr)
 {
     return (int*)(base_addr + 0x857060);
