@@ -5,11 +5,24 @@ fn_cSubChar_movePos cSubChar_movePos;
 typedef __int64(__fastcall* fn_cSubChar_move)(int cSubCharPtr);
 fn_cSubChar_move cSubChar_move;
 
+typedef void(__fastcall* fn_cSubChar_moveDamage)(int cSubCharPtr);
+fn_cSubChar_moveDamage cSubChar_moveDamage;
+
+
 typedef int(__thiscall* fn_cManager_cEm__createBack)(int* emMgr, uint32_t id);
 fn_cManager_cEm__createBack cManager_cEm__createBack;
 
 typedef int(__thiscall* fn_cManager_cEm__construct)(int* emMgr, int emMemory, uint8_t npcId);
 fn_cManager_cEm__construct cManager_cEm__construct;
+
+
+typedef void(__thiscall* fn_cEm_setStatus)(int* em, int status);
+fn_cEm_setStatus cEm_setStatus;
+
+
+typedef void(__thiscall* fn_cAction_moveAttack)(void* cAction, void* cAnalysis, void* cRoutine);
+fn_cAction_moveAttack cAction_moveAttack;
+
 
 typedef int(__cdecl* fn_EmReadSearch)(uint8_t npcId, void* data_addr, uint32_t malloc_size);
 fn_EmReadSearch EmReadSearch;
@@ -87,7 +100,11 @@ void HookFunctions(DWORD base_addr)
 {
     cSubChar_movePos = (fn_cSubChar_movePos)(base_addr + 0x3567e0); //0x7567e0
     cSubChar_move = (fn_cSubChar_move)(base_addr + 0x361a70);
+    cSubChar_moveDamage = (fn_cSubChar_moveDamage)(base_addr + 0x4e9a50);
+
     cManager_cEm__createBack = (fn_cManager_cEm__createBack)(base_addr + 0x1b23f0);
+
+    cEm_setStatus = (fn_cEm_setStatus)(base_addr + 0x1aed90);
 }
 
 void CodeInjection(HANDLE handle, DWORD base_addr)

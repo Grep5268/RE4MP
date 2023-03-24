@@ -58,29 +58,8 @@ DWORD WINAPI MainThread(LPVOID param) {
 
         // cSubChar manual control
         float moveFactor = 20.0;
-        if (GetAsyncKeyState(VK_NUMPAD0)) {
-            float* cEmPos = GetCEmPos(playerTwoPtr);
-
-            HMODULE hUser32 = LoadLibraryA("user32.dll");
-
-            if (hUser32 != NULL)
-            {
-                // Get the address of the MessageBox function
-                FARPROC pMessageBox = GetProcAddress(hUser32, "MessageBoxA");
-
-                if (pMessageBox != NULL)
-                {
-                    // Call the MessageBox function
-                    ((void (WINAPI*)(HWND, LPCSTR, LPCSTR, UINT))pMessageBox)(NULL, std::to_string(cEmPos[0]).c_str(), "Injected DLL", MB_OK);
-                }
-
-                // Free the library
-                FreeLibrary(hUser32);
-            }
-
-
-            float* pos = GetPlayerPosition(base_addr);
-            MoveSubChar(base_addr, pos);
+        if (GetAsyncKeyState(VK_NUMPAD0) && playerTwoPtr != nullptr) {
+            cEm_setStatus(playerTwoPtr, 0);
         }
 
         if (GetAsyncKeyState(VK_UP) && playerTwoPtr != nullptr) {

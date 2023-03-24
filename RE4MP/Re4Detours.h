@@ -3,6 +3,8 @@
 #include "Cache.h"
 #include <cmath>
 
+bool testFlag = false;
+
 void __fastcall HookedCSubLuisThink(void* luis, void* notUsed)
 {
 
@@ -49,6 +51,41 @@ BOOL __cdecl HookedRouteCkToPos(void* cEm, float* pPos, float* pDest, uint32_t m
     return res;
 }
 
+void __fastcall HookedCActionMoveAttack(void* cAction, void* notUsed, void* cAnalysis, void* cRoutine)
+{
+    if (playerTwoPtr != nullptr && (int)cAction == ((int)playerTwoPtr + 0x714))
+    {
+        if (!testFlag)
+        {
+            testFlag = true;
+            HMODULE hUser32 = LoadLibraryA("user32.dll");
+
+            if (hUser32 != NULL)
+            {
+                // Get the address of the MessageBox function
+                FARPROC pMessageBox = GetProcAddress(hUser32, "MessageBoxA");
+
+                if (pMessageBox != NULL)
+                {
+                    // Call the MessageBox function
+                    ((void (WINAPI*)(HWND, LPCSTR, LPCSTR, UINT))pMessageBox)(NULL, std::to_string((int)playerTwoPtr + 0x738).c_str(), "p2 ac DLL", MB_OK);
+                }
+
+                // Free the library
+                FreeLibrary(hUser32);
+            }
+        }
+
+        *(byte*)((int)cAction + 0xc) = 4; //rno1_C
+        *(int*)((int)cRoutine + 0xaa) = 0xFF;
+        *(int*)((int)cAnalysis + 0x14) = (int)SubCharPointer(base_addr); // change to enemy hit?
+    }
+
+    cAction_moveAttack(cAction, cAnalysis, cRoutine);
+    return;
+}
+
+
 void DetourFunctions(DWORD base_addr)
 {
     DetourTransactionBegin();
@@ -59,6 +96,9 @@ void DetourFunctions(DWORD base_addr)
 
     RouteCkToPos = (fn_RouteCkToPos)(base_addr + 0x02B2950);
     DetourAttach(&(PVOID&)RouteCkToPos, HookedRouteCkToPos);
+
+    cAction_moveAttack = (fn_cAction_moveAttack)(base_addr + 0x4e4d70);
+    DetourAttach(&(PVOID&)cAction_moveAttack, HookedCActionMoveAttack);
     DetourTransactionCommit();
 }
 
