@@ -55,33 +55,20 @@ void __fastcall HookedCActionMoveAttack(void* cAction, void* notUsed, void* cAna
 {
     if (playerTwoPtr != nullptr && (int)cAction == ((int)playerTwoPtr + 0x714))
     {
-        if (!testFlag)
-        {
-            testFlag = true;
-            HMODULE hUser32 = LoadLibraryA("user32.dll");
-
-            if (hUser32 != NULL)
-            {
-                // Get the address of the MessageBox function
-                FARPROC pMessageBox = GetProcAddress(hUser32, "MessageBoxA");
-
-                if (pMessageBox != NULL)
-                {
-                    // Call the MessageBox function
-                    ((void (WINAPI*)(HWND, LPCSTR, LPCSTR, UINT))pMessageBox)(NULL, std::to_string((int)playerTwoPtr + 0x738).c_str(), "p2 ac DLL", MB_OK);
-                }
-
-                // Free the library
-                FreeLibrary(hUser32);
-            }
-        }
-
-        *(byte*)((int)cAction + 0xc) = 4; //rno1_C
-        *(int*)((int)cRoutine + 0xaa) = 0xFF;
-        *(int*)((int)cAnalysis + 0x14) = (int)SubCharPointer(base_addr); // change to enemy hit?
+        // todo mess with this to make it good
+        *(byte*)((int)cAction + 0xc) = 2; //rno1_C
+        *(int*)((int)cRoutine + 0xa8) = (int)SubCharPointer(base_addr); // change to enemy hit?
+        *(int*)((int)cRoutine + 0x14) = (int)SubCharPointer(base_addr); // change to enemy hit?
+        *(int*)((int)cRoutine + 0xba) = 1; // shoot type>>??
     }
 
     cAction_moveAttack(cAction, cAnalysis, cRoutine);
+    
+    if (playerTwoPtr != nullptr && (int)cAction == ((int)playerTwoPtr + 0x714))
+    {
+        cRoutine_moveWepFire(cRoutine);
+    }
+
     return;
 }
 
