@@ -59,7 +59,7 @@ DWORD WINAPI MainThread(LPVOID param) {
         // cSubChar manual control
         float moveFactor = 20.0;
         if (GetAsyncKeyState(VK_NUMPAD0) && playerTwoPtr != nullptr) {
-            cEm_setStatus(playerTwoPtr, 0);
+            playerTwoDidShoot = true;
         }
 
         if (GetAsyncKeyState(VK_UP) && playerTwoPtr != nullptr) {

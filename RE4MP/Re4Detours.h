@@ -22,8 +22,12 @@ void __fastcall HookedCSubLuisThink(void* luis, void* notUsed)
         *(int*)((int)luis + 0x718) = 1;
         *(int*)((int)luis + 0x71C) = 1;
 
-        *(int*)((int)luis + 0x424 + 0x2e8) = (int)playerTwoPtr; // cRoutine + shoot type or somethin
-        cRoutine_shot((void*)((int)luis + 0x424));
+        if (playerTwoDidShoot) {
+            playerTwoDidShoot = false;
+            *(int*)((int)luis + 0x424 + 0x2e8) = (int)playerTwoPtr; // cRoutine + target?
+            cRoutine_shot((void*)((int)luis + 0x424));
+        }
+        
     }
     else
     {
