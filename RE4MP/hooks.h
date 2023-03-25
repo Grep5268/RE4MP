@@ -33,8 +33,8 @@ fn_cSubLuis_think CSubLuisThink;
 typedef BOOL(__cdecl* fn_RouteCkToPos)(void* cEm, float* pPos, float* pDest, uint32_t mode, float* pMax);
 fn_RouteCkToPos RouteCkToPos;
 
-typedef int(__thiscall* fn_cRoutine_moveWepFire)(void* routine);
-fn_cRoutine_moveWepFire cRoutine_moveWepFire;
+typedef int(__thiscall* fn_cRoutine_shot)(void* routine);
+fn_cRoutine_shot cRoutine_shot;
 
 
 int* GetEmMgrPointer(DWORD base_addr)
@@ -109,7 +109,6 @@ void HookFunctions(DWORD base_addr)
     cManager_cEm__createBack = (fn_cManager_cEm__createBack)(base_addr + 0x1b23f0);
 
     cEm_setStatus = (fn_cEm_setStatus)(base_addr + 0x1aed90);
-    cRoutine_moveWepFire = (fn_cRoutine_moveWepFire)(base_addr + 0x4e52f0);
 }
 
 void CodeInjection(HANDLE handle, DWORD base_addr)

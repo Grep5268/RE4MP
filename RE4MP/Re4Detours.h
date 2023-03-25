@@ -19,15 +19,19 @@ void __fastcall HookedCSubLuisThink(void* luis, void* notUsed)
         (std::fabs(pos[0] - cEmPos[0]) < 150)
         && (std::fabs(pos[2] - cEmPos[2]) < 150))
     {
-        playerTwoActionType = 1;
+        *(int*)((int)luis + 0x718) = 1;
+        *(int*)((int)luis + 0x71C) = 1;
+
+        *(int*)((int)luis + 0x424 + 0x2e8) = (int)playerTwoPtr; // cRoutine + shoot type or somethin
+        cRoutine_shot((void*)((int)luis + 0x424));
     }
     else
     {
-        playerTwoActionType = 2;
+        *(int*)((int)luis + 0x718) = 2;
+        *(int*)((int)luis + 0x71C) = 2;
     }
 
-    *(int*)((int)luis + 0x718) = playerTwoActionType;
-    *(int*)((int)luis + 0x71C) = playerTwoActionType;
+    
 
     // Do something after the original function returns, such as modifying the result or logging
     return;
@@ -57,17 +61,16 @@ void __fastcall HookedCActionMoveAttack(void* cAction, void* notUsed, void* cAna
     {
         // todo mess with this to make it good
         *(byte*)((int)cAction + 0xc) = 2; //rno1_C
-        *(int*)((int)cRoutine + 0xa8) = (int)SubCharPointer(base_addr); // change to enemy hit?
-        *(int*)((int)cRoutine + 0x14) = (int)SubCharPointer(base_addr); // change to enemy hit?
-        *(int*)((int)cRoutine + 0xba) = 1; // shoot type>>??
     }
 
     cAction_moveAttack(cAction, cAnalysis, cRoutine);
-    
-    if (playerTwoPtr != nullptr && (int)cAction == ((int)playerTwoPtr + 0x714))
-    {
-        cRoutine_moveWepFire(cRoutine);
-    }
+
+    return;
+}
+
+void __fastcall HookedCRoutineShot(void* cRoutine, void* notUsed)
+{
+    cRoutine_shot(cRoutine);
 
     return;
 }
@@ -86,6 +89,9 @@ void DetourFunctions(DWORD base_addr)
 
     cAction_moveAttack = (fn_cAction_moveAttack)(base_addr + 0x4e4d70);
     DetourAttach(&(PVOID&)cAction_moveAttack, HookedCActionMoveAttack);
+
+    cRoutine_shot = (fn_cRoutine_shot)(base_addr + 0x4e52f0);
+    DetourAttach(&(PVOID&)cRoutine_shot, HookedCRoutineShot);
     DetourTransactionCommit();
 }
 
