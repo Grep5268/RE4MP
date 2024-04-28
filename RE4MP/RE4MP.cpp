@@ -11,6 +11,7 @@
 #include "RE4MP.h"
 #include "hooks.h"
 #include "Re4Detours.h"
+#include "constants.h"
 
 DWORD procID; // A 32-bit unsigned integer, DWORDS are mostly used to store Hexadecimal Addresses
 HANDLE handle;
@@ -33,8 +34,10 @@ DWORD WINAPI MainThread(LPVOID param) {
         
         if (GetAsyncKeyState(VK_F5)) {
             // playerTwoPtr + 0x94
-            playerTwoPtr = (int*)cManager_cEm__createBack(GetEmMgrPointer(base_addr), 0x4);
-        
+            // playerTwoPtr = (int*)cManager_cEm__createBack(GetEmMgrPointer(base_addr), 0x4);
+            playerTwoPtr = (int*)cManager_cEm__create(GetEmMgrPointer(base_addr), 0x2);
+            //subLeonInit((int)playerTwoPtr); // inits to this var
+
             /*
             HMODULE hUser32 = LoadLibraryA("user32.dll");
 

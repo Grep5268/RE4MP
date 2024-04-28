@@ -148,6 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Cache.h" />
+    <ClInclude Include="constants.h" />
     <ClInclude Include="detours.h" />
     <ClInclude Include="hooks.h" />
     <ClInclude Include="Re4Detours.h" />

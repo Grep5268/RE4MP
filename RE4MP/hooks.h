@@ -8,6 +8,11 @@ fn_cSubChar_move cSubChar_move;
 typedef void(__fastcall* fn_cSubChar_moveDamage)(int cSubCharPtr);
 fn_cSubChar_moveDamage cSubChar_moveDamage;
 
+typedef void(cdecl* fn_subLeonInit)(int cSubSubLeonPtr);
+fn_subLeonInit subLeonInit;
+
+typedef int(__thiscall* fn_cManager_cEm__create)(int* emMgr, uint32_t id);
+fn_cManager_cEm__create cManager_cEm__create;
 
 typedef int(__thiscall* fn_cManager_cEm__createBack)(int* emMgr, uint32_t id);
 fn_cManager_cEm__createBack cManager_cEm__createBack;
@@ -106,20 +111,33 @@ void HookFunctions(DWORD base_addr)
     cSubChar_move = (fn_cSubChar_move)(base_addr + 0x361a70);
     cSubChar_moveDamage = (fn_cSubChar_moveDamage)(base_addr + 0x4e9a50);
 
+    cManager_cEm__create = (fn_cManager_cEm__create)(base_addr + 0x1b2350);
     cManager_cEm__createBack = (fn_cManager_cEm__createBack)(base_addr + 0x1b23f0);
+    subLeonInit = (fn_subLeonInit)(base_addr + 0x4e46a0);
 
     cEm_setStatus = (fn_cEm_setStatus)(base_addr + 0x1aed90);
 }
 
 void CodeInjection(HANDLE handle, DWORD base_addr)
 {
+    // yandere code :(
     char twoNop[2] = { 0x90, 0x90 }; //nop
     char threeNop[3] = { 0x90, 0x90, 0x90 }; //nop
     char fiveNop[5] = { 0x90, 0x90, 0x90, 0x90, 0x90 }; //nop
     char sixNop[6] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }; //nop
 
+    ////plClothSetLeon
+    OverwriteBytes(handle, (base_addr + 0x28077d), fiveNop, 5); //testHolsterSetLeon
+    OverwriteBytes(handle, (base_addr + 0x280789), fiveNop, 5); //testHairSetSetLeon
+
+    ////subChar__init
+    
+    // these 2 are needed I think
+    //OverwriteBytes(handle, (base_addr + 0x358ab4), fiveNop, 5); //motionsetcore
+    //OverwriteBytes(handle, (base_addr + 0x358abe), fiveNop, 5); //motionMove
+
     // Disable Luis partner set and move
-    OverwriteBytes(handle, (base_addr + 0x4e8a41), sixNop, 6);
+    //OverwriteBytes(handle, (base_addr + 0x4e8a41), sixNop, 6);
     //OverwriteBytes(handle, (base_addr + 0x4ea021), fiveNop, 5);
 
     // Disable cSubChar setting partner location for movement

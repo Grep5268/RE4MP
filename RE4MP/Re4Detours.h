@@ -85,6 +85,7 @@ void DetourFunctions(DWORD base_addr)
     DetourTransactionBegin();
     DetourUpdateThread(GetCurrentThread());
 
+    /*
     CSubLuisThink = (fn_cSubLuis_think)(base_addr + 0x04e8af0);
     DetourAttach(&(PVOID&)CSubLuisThink, HookedCSubLuisThink);
 
@@ -96,6 +97,8 @@ void DetourFunctions(DWORD base_addr)
 
     cRoutine_shot = (fn_cRoutine_shot)(base_addr + 0x4e52f0);
     DetourAttach(&(PVOID&)cRoutine_shot, HookedCRoutineShot);
+    */
+
     DetourTransactionCommit();
 }
 
